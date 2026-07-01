@@ -1,7 +1,7 @@
-import subprocess
-import json
+from pyswip import Prolog
 
-SWIPL = r"C:\Program Files\swipl\bin\swipl.exe"
+prolog = Prolog()
+prolog.consult("consultas.pl")
 
 # ==========================
 # ESTADO
@@ -18,7 +18,7 @@ preferencias = {
 }
 
 # ==========================
-# PREGUNTAS (TODO NUMÉRICO)
+# PREGUNTAS
 # ==========================
 
 preguntas = {
@@ -77,7 +77,7 @@ mapas = {
 }
 
 # ==========================
-# VALIDACIÓN SEGURA
+# INPUT
 # ==========================
 
 def pedir_numero(campo):
@@ -90,122 +90,139 @@ def pedir_numero(campo):
         if campo == "precio":
             if r.isdigit():
                 return int(r)
-            print("❌ Ingresá un número válido.")
-            continue
 
         if r in mapas[campo]:
             return mapas[campo][r]
 
-        print("❌ Opción inválida. Intentá de nuevo.")
+        print("❌ Opción inválida.")
 
 # ==========================
 # PROLOG
 # ==========================
+
+
 def ejecutar_prolog(p):
 
     consulta = f"""
-    findall(
-        [Nombre,Puntaje,Precio],
-        buscar_restaurante(
+        consultar(
+            Resultados,
             {p['barrio']},
             {p['precio']},
-            {p['cocina']},
             {p['cocina']},
             {p['plan']},
             {p['terraza']},
             {p['reserva']},
-            {p['opcion']},
-            Nombre,
-            Precio,
-            Rating,
-            Puntaje,
-            Motivos
-        ),
-        Resultados
-    ),
-    write(Resultados),
-    nl,
-    halt.
+            {p['opcion']}
+        )
     """
 
-    proceso = subprocess.run(
-        [SWIPL, "-q", "-s", "consultas.pl", "-g", consulta],
-        capture_output=True,
-        text=True,
-        timeout=5
-    )
+    respuesta = list(prolog.query(consulta))
 
-    if proceso.returncode != 0:
-        print("❌ ERROR PROLOG:")
-        print(proceso.stderr)
+    if not respuesta:
         return []
 
-    salida = (proceso.stdout or "").strip()
+    return respuesta[0]["Resultados"]
 
+def convertir_resultados(resultados):
 
-    return salida
+    lista = []
 
-def parse_resultados(raw):
+    for r in resultados:
 
-    if not raw or raw == "[]":
-        return []
+        lista.append({
 
-    raw = raw.strip()
+            "nombre": str(r[0]),
 
-    # limpiar estructura Prolog
-    raw = raw.replace("[[", "[").replace("]]", "]")
+            "puntaje": int(r[1]),
 
-    items = []
+            "precio": int(r[2]),
 
-    partes = raw.split("],[")
+            "rating": float(r[3]),
 
-    for p in partes:
-        p = p.replace("[", "").replace("]", "")
-        campos = p.split(",")
+            "coincidencias": [str(x) for x in r[4]]
 
-        if len(campos) >= 3:
-            nombre = campos[0]
-            puntaje = int(campos[1])
-            precio = int(campos[2])
-            items.append((nombre, puntaje, precio))
+        })
 
-    return items
+    return lista
 
 # ==========================
-# TOP 10
+# EXPLICACIÓN INTELIGENTE
+# ==========================
+
+TRADUCCION = {
+    "barrio": "📍 Está en el barrio elegido",
+    "precio": "💰 Está dentro del presupuesto",
+    "cocina": "🍽️ Coincide con la cocina elegida",
+    "plan": "🎉 Es ideal para ese tipo de salida",
+    "terraza": "🌿 Tiene terraza",
+    "reserva": "📅 Cumple con la condición de reserva",
+    "opcion": "🥗 Tiene la opción alimentaria solicitada"
+}
+
+def generar_explicacion(restaurante):
+
+    explicacion = []
+
+    for c in restaurante["coincidencias"]:
+
+        c = str(c).strip()
+
+        if c in TRADUCCION:
+            explicacion.append(TRADUCCION[c])
+
+    return explicacion
+
+# ==========================
+# RANKING
 # ==========================
 
 def mostrar_top(resultados):
 
     if not resultados:
-        print("\n❌ No se encontraron resultados.")
+        print("\n❌ No se encontraron restaurantes.")
         return
 
-    resultados.sort(key=lambda x: x[1], reverse=True)
+    resultados.sort(key=lambda x: x["puntaje"], reverse=True)
 
-    print("\n🏆 TOP 10 RESTAURANTES:\n")
+    print("\n🏆 TOP 10 RESTAURANTES\n")
 
     for i, r in enumerate(resultados[:10]):
-        print(f"{i+1}. ⭐ {r[0]} | {r[1]} pts | 💰 {r[2]}")
 
+        print(f"{i+1}. ⭐ {r['nombre']}")
+        print(f"💰 Precio promedio: ${r['precio']}")
+        print(f"🎯 Puntaje: {r['puntaje']}")
+        print(f"⭐ Rating: {r['rating']}")
+
+        exp = generar_explicacion(r)
+
+        if exp:
+            print("\nCoincide con:")
+
+            for e in exp:
+                print("   •", e)
+
+        print("-"*50)
+        
 # ==========================
 # MAIN
 # ==========================
+
 def main():
 
     print("🤖 Hola. Soy BotiGastro.")
     print("Te voy a ayudar a elegir dónde comer.\n")
 
-    for campo in preferencias:
-        preferencias[campo] = pedir_numero(campo)
+    for c in preferencias:
+        preferencias[c] = pedir_numero(c)
 
     print("\n🧠 Buscando mejores opciones...\n")
 
-    raw = ejecutar_prolog(preferencias)
+    resultados = ejecutar_prolog(preferencias)
 
-    resultados = parse_resultados(raw)
+    resultados = convertir_resultados(resultados)
 
     mostrar_top(resultados)
+
 
 
 if __name__ == "__main__":

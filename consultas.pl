@@ -1,20 +1,16 @@
-:- encoding(utf8).
-
 :- consult('base.pl').
 :- consult('reglas.pl').
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CONSULTA PRINCIPAL (WRAPPER PARA PYTHON)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+consultar(Resultados, Barrio, PrecioMax, Cocina, Plan, Terraza, Reserva, Opcion) :-
 
-consultar(Resultados) :-
     findall(
-        [Nombre,Puntaje,Precio],
+        [Nombre,Puntaje,Precio,Rating,Coincidencias],
+
         buscar_restaurante(
             Barrio,
             PrecioMax,
-            TipoLocal,
             Cocina,
+            _,
             Plan,
             Terraza,
             Reserva,
@@ -23,7 +19,8 @@ consultar(Resultados) :-
             Precio,
             Rating,
             Puntaje,
-            Motivos
+            Coincidencias
         ),
+
         Resultados
     ).
