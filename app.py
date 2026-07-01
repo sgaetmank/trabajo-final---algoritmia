@@ -1,7 +1,9 @@
 from pyswip import Prolog
 
 prolog = Prolog()
+
 prolog.consult("consultas.pl")
+prolog.consult("viajante.pl")
 
 # ==========================
 # ESTADO
@@ -129,17 +131,28 @@ def convertir_resultados(resultados):
 
     for r in resultados:
 
+        nombre = r[1]
+
+        if isinstance(nombre, bytes):
+            nombre = nombre.decode("utf-8")
+
         lista.append({
 
-            "nombre": str(r[0]),
+            "id": str(r[0]),
 
-            "puntaje": int(r[1]),
+            "nombre": nombre,
 
-            "precio": int(r[2]),
+            "puntaje": int(r[2]),
 
-            "rating": float(r[3]),
+            "precio": int(r[3]),
 
-            "coincidencias": [str(x) for x in r[4]]
+            "rating": float(r[4]),
+
+            "lat": float(r[5]),
+
+            "lon": float(r[6]),
+
+            "coincidencias": [str(x) for x in r[7]]
 
         })
 
@@ -202,7 +215,174 @@ def mostrar_top(resultados):
                 print("   •", e)
 
         print("-"*50)
-        
+
+
+# ==========================================================
+# RECORRIDO (Problema del Viajante)
+# ==========================================================
+
+def preguntar_recorrido():
+
+    while True:
+
+        print("\n¿Deseás generar un recorrido entre algunos de estos restaurantes?")
+        print("1. Sí")
+        print("2. No")
+
+        op = input("> ").strip()
+
+        if op == "1":
+            return True
+
+        if op == "2":
+            return False
+
+        print("❌ Opción inválida.")
+
+
+def mostrar_opciones_recorrido(disponibles):
+
+    print("\nRestaurantes disponibles:\n")
+
+    for i, r in enumerate(disponibles):
+
+        print(f"{i+1}. {r['nombre']}")
+
+    print("0. Finalizar selección")
+
+
+
+def seleccionar_restaurantes(resultados):
+
+    disponibles = resultados[:10]
+
+    seleccionados = []
+
+    # ==========================
+    # RESTAURANTE INICIAL
+    # ==========================
+
+    while True:
+
+        print("\nElegí el restaurante donde querés comenzar y terminar el recorrido:\n")
+
+        mostrar_opciones_recorrido(disponibles)
+
+        op = input("> ").strip()
+
+        if op.isdigit():
+
+            op = int(op)
+
+            if 1 <= op <= len(disponibles):
+
+                inicio = disponibles.pop(op-1)
+
+                seleccionados.append(inicio)
+
+                break
+
+        print("❌ Opción inválida.")
+
+    # ==========================
+    # RESTAURANTES INTERMEDIOS
+    # ==========================
+
+    while disponibles:
+
+        print("\nElegí otro restaurante para agregar al recorrido.")
+        print("(0 para finalizar)")
+
+        mostrar_opciones_recorrido(disponibles)
+
+        op = input("> ").strip()
+
+        if op == "0":
+            break
+
+        if op.isdigit():
+
+            op = int(op)
+
+            if 1 <= op <= len(disponibles):
+
+                seleccionado = disponibles.pop(op-1)
+
+                seleccionados.append(seleccionado)
+
+                continue
+
+        print("❌ Opción inválida.")
+
+    return seleccionados
+
+# ==========================================================
+# VIAJANTE
+# ==========================================================
+
+def calcular_recorrido(seleccionados):
+
+    inicio = seleccionados[0]["id"]
+
+    restantes = [r["id"] for r in seleccionados[1:]]
+
+    lista = "[" + ",".join(restantes) + "]"
+
+    consulta = f"""
+        tsp(
+            {inicio},
+            {lista},
+            Ruta,
+            Costo
+        )
+    """
+
+    respuesta = list(prolog.query(consulta))
+
+    if not respuesta:
+        return None
+
+    return respuesta[0]
+
+def mostrar_recorrido(recorrido, seleccionados):
+
+    if recorrido is None:
+        print("\n❌ No fue posible calcular el recorrido.")
+        return
+
+    # Diccionario: ID -> Nombre
+    nombres = {}
+
+    for r in seleccionados:
+        nombres[r["id"]] = r["nombre"]
+
+    ruta = recorrido["Ruta"]
+    costo = recorrido["Costo"]
+    costo_km = costo * 111
+
+    print("\n")
+    print("=" * 60)
+    print("🗺️  RECORRIDO ÓPTIMO (Problema del Viajante)")
+    print("=" * 60)
+
+    print(f"\n📍 Restaurante de inicio y fin: {nombres[ruta[0]]}\n")
+
+    print("Recorrido recomendado:\n")
+
+    for i, restaurante in enumerate(ruta):
+
+        print(f"{i+1}. 🍽️ {nombres[restaurante]}")
+
+        if i != len(ruta)-1:
+            print("      │")
+            print("      ▼")
+
+    print("\n" + "-" * 60)
+    print(f"📏 Distancia aproximada: {costo_km:.2f} km")
+    print("=" * 60)
+
+
+
 # ==========================
 # MAIN
 # ==========================
@@ -223,6 +403,24 @@ def main():
 
     mostrar_top(resultados)
 
+    # ===========================================
+    # NUEVA FUNCIONALIDAD
+    # ===========================================
+
+    if preguntar_recorrido():
+
+        seleccionados = seleccionar_restaurantes(resultados)
+
+        print("\nElegiste los siguientes restaurantes:\n")
+
+        for r in seleccionados:
+            print("•", r["nombre"])
+
+        print("\n🧠 Calculando el mejor recorrido...\n")
+
+        recorrido = calcular_recorrido(seleccionados)
+
+        mostrar_recorrido(recorrido, seleccionados)
 
 
 if __name__ == "__main__":

@@ -394,3 +394,32 @@ rating(r17,4.6).
 rating(r18,4.6).
 rating(r19,4.5).
 rating(r20,4.7).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%% COORDENADAS %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% coordenadas(ID, Latitud, Longitud).
+
+coordenadas(r1,-34.5888,-58.4302).   % Don Julio
+coordenadas(r2,-34.5884,-58.4290).   % La Cabrera
+coordenadas(r3,-34.6447,-58.5146).   % El Ferroviario
+coordenadas(r4,-34.6037,-58.3816).   % Guerrín
+coordenadas(r5,-34.5895,-58.4555).   % La Mezzetta
+coordenadas(r6,-34.5914,-58.4550).   % El Imperio
+coordenadas(r7,-34.5962,-58.4344).   % Sarkis
+coordenadas(r8,-34.5820,-58.4242).   % Sacro
+coordenadas(r9,-34.5951,-58.4367).   % Chuí
+coordenadas(r10,-34.5805,-58.4256).  % Buenos Aires Verde
+coordenadas(r11,-34.6083,-58.3647).  % Osaka
+coordenadas(r12,-34.5899,-58.4284).  % Niño Gordo
+coordenadas(r13,-34.5875,-58.4276).  % Gran Dabbang
+coordenadas(r14,-34.5788,-58.3929).  % Casa Cavia
+coordenadas(r15,-34.5945,-58.4340).  % Anafe
+coordenadas(r16,-34.5881,-58.4264).  % El Preferido de Palermo
+coordenadas(r17,-34.5867,-58.4255).  % Birkin
+coordenadas(r18,-34.5849,-58.4250).  % Café Registrado
+coordenadas(r19,-34.5878,-58.4305).  % Mirutaki
+coordenadas(r20,-34.5988,-58.4314).  % La Alacena
