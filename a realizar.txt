@@ -1,6 +1,6 @@
 - agrandar la base de datos
-- maquinas de turing (tanto para la primera como segunda funcionalidad)
 - poner comentarios en las funciones que expliquen brevemente lo que hace
 - mejorar la salida para que sea mas linda
-- agregar otras funcionalidades (como delivery, metodos de pago). en este caso modificar tmb lo necesario en e informe
 - hacer una presentacion
+- quizas se puede "unificar" todo el informe sin que este separado por funcionalidades
+- si estamos gedes podemos hacer una interfaz grafica piola
