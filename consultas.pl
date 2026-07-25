@@ -1,9 +1,6 @@
 :- consult('base.pl').
 :- consult('reglas.pl').
 
-:- consult('base.pl').
-:- consult('reglas.pl').
-
 consultar(Resultados, Barrio, PrecioMax, Cocina, Plan, Terraza, Reserva, Opcion) :-
 
     findall(
