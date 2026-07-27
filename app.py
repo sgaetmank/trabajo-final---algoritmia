@@ -24,18 +24,80 @@ preferencias = {
 # ==========================
 
 preguntas = {
-    "plan": "¿Con quién vas?\n1 Pareja\n2 Amigos\n3 Familia\n4 Trabajo\n5 Solo",
-    "precio": "¿Qué presupuesto manejás? (ej: 30000)",
-    "cocina": "¿Qué tipo de comida preferís?\n1 Pizza\n2 Parrilla\n3 Sushi\n4 Italiana\n5 Mexicana\n6 Hamburguesas\n7 Bar\n0 Sin preferencia",
-    "barrio": "¿En qué barrio querés comer?\n1 Palermo\n2 San Telmo\n3 Caballito\n0 Cualquiera",
-    "terraza": "¿Querés terraza?\n1 Sí\n2 No\n0 Indistinto",
-    "reserva": "¿Necesitás reserva?\n1 Sí\n2 No\n0 Indistinto",
-    "opcion": "¿Preferencia alimentaria?\n1 Vegetariana\n2 Vegana\n0 Ninguna"
+    "plan": (
+        "¿Con quién vas?\n"
+        "1 Pareja\n"
+        "2 Amigos\n"
+        "3 Familia\n"
+        "4 Trabajo\n"
+        "5 Solo"
+    ),
+    "precio": "¿Qué presupuesto máximo por persona manejás? (ej: 30000)",
+    "cocina": (
+        "¿Qué tipo de comida preferís?\n"
+        "1 Argentina (incluye parrillas y bodegones)\n"
+        "2 Pizza\n"
+        "3 Italiana\n"
+        "4 Japonesa / sushi\n"
+        "5 Asiática\n"
+        "6 Armenia\n"
+        "7 India\n"
+        "8 Israelí\n"
+        "9 Mediterránea\n"
+        "10 Mariscos\n"
+        "11 Vegetariana\n"
+        "12 Vegana\n"
+        "13 De autor\n"
+        "14 Contemporánea\n"
+        "15 Fusión\n"
+        "16 Cafetería\n"
+        "0 Sin preferencia"
+    ),
+    "barrio": (
+        "¿En qué barrio querés comer?\n"
+        "1 Palermo\n"
+        "2 San Telmo\n"
+        "3 Villa Crespo\n"
+        "4 Chacarita\n"
+        "5 Recoleta\n"
+        "6 Puerto Madero\n"
+        "7 Belgrano\n"
+        "8 San Nicolás\n"
+        "9 Liniers\n"
+        "10 Retiro\n"
+        "11 Colegiales\n"
+        "12 La Boca\n"
+        "13 Almagro\n"
+        "14 Monserrat\n"
+        "0 Cualquiera"
+    ),
+    "terraza": (
+        "¿Querés terraza o espacio al aire libre?\n"
+        "1 Sí\n"
+        "2 No\n"
+        "0 Indistinto"
+    ),
+    "reserva": (
+        "¿Necesitás que acepte reservas?\n"
+        "1 Sí\n"
+        "2 No\n"
+        "0 Indistinto"
+    ),
+    "opcion": (
+        "¿Tenés alguna preferencia alimentaria?\n"
+        "1 Vegetariana\n"
+        "2 Vegana\n"
+        "3 Sin TACC\n"
+        "0 Ninguna"
+    )
 }
 
 # ==========================
 # MAPEO
 # ==========================
+
+# Los valores de estos mapas coinciden exactamente con los átomos
+# utilizados en la base de conocimiento Prolog.
 
 mapas = {
     "plan": {
@@ -46,19 +108,39 @@ mapas = {
         "5": "solo"
     },
     "cocina": {
-        "1": "pizza",
-        "2": "parrilla",
-        "3": "sushi",
-        "4": "italiana",
-        "5": "mexicana",
-        "6": "hamburguesas",
-        "7": "bar",
+        "1": "argentina",
+        "2": "pizza",
+        "3": "italiana",
+        "4": "japonesa",
+        "5": "asiatica",
+        "6": "armenia",
+        "7": "india",
+        "8": "israeli",
+        "9": "mediterranea",
+        "10": "mariscos",
+        "11": "vegetariana",
+        "12": "vegana",
+        "13": "autor",
+        "14": "contemporanea",
+        "15": "fusion",
+        "16": "cafeteria",
         "0": "cualquiera"
     },
     "barrio": {
         "1": "palermo",
         "2": "san_telmo",
-        "3": "caballito",
+        "3": "villa_crespo",
+        "4": "chacarita",
+        "5": "recoleta",
+        "6": "puerto_madero",
+        "7": "belgrano",
+        "8": "san_nicolas",
+        "9": "liniers",
+        "10": "retiro",
+        "11": "colegiales",
+        "12": "la_boca",
+        "13": "almagro",
+        "14": "monserrat",
         "0": "cualquiera"
     },
     "terraza": {
@@ -74,6 +156,7 @@ mapas = {
     "opcion": {
         "1": "vegetariana",
         "2": "vegana",
+        "3": "sin_tacc",
         "0": "ninguna"
     }
 }
@@ -87,24 +170,26 @@ def pedir_numero(campo):
         print("\n🤖 BotiGastro:")
         print(preguntas[campo])
 
-        r = input("> ").strip()
+        respuesta = input("> ").strip()
 
         if campo == "precio":
-            if r.isdigit():
-                return int(r)
+            if respuesta.isdigit() and int(respuesta) > 0:
+                return int(respuesta)
 
-        if r in mapas[campo]:
-            return mapas[campo][r]
+            print("❌ Ingresá un presupuesto mayor que cero.")
+            continue
+
+        if respuesta in mapas[campo]:
+            return mapas[campo][respuesta]
 
         print("❌ Opción inválida.")
+
 
 # ==========================
 # PROLOG
 # ==========================
 
-
 def ejecutar_prolog(p):
-
     consulta = f"""
         consultar(
             Resultados,
@@ -125,38 +210,29 @@ def ejecutar_prolog(p):
 
     return respuesta[0]["Resultados"]
 
-def convertir_resultados(resultados):
 
+def convertir_resultados(resultados):
     lista = []
 
-    for r in resultados:
-
-        nombre = r[1]
+    for resultado in resultados:
+        nombre = resultado[1]
 
         if isinstance(nombre, bytes):
             nombre = nombre.decode("utf-8")
 
         lista.append({
-
-            "id": str(r[0]),
-
+            "id": str(resultado[0]),
             "nombre": nombre,
-
-            "puntaje": int(r[2]),
-
-            "precio": int(r[3]),
-
-            "rating": float(r[4]),
-
-            "lat": float(r[5]),
-
-            "lon": float(r[6]),
-
-            "coincidencias": [str(x) for x in r[7]]
-
+            "puntaje": int(resultado[2]),
+            "precio": int(resultado[3]),
+            "rating": float(resultado[4]),
+            "lat": float(resultado[5]),
+            "lon": float(resultado[6]),
+            "coincidencias": [str(x) for x in resultado[7]]
         })
 
     return lista
+
 
 # ==========================
 # EXPLICACIÓN INTELIGENTE
@@ -167,54 +243,58 @@ TRADUCCION = {
     "precio": "💰 Está dentro del presupuesto",
     "cocina": "🍽️ Coincide con la cocina elegida",
     "plan": "🎉 Es ideal para ese tipo de salida",
-    "terraza": "🌿 Tiene terraza",
+    "terraza": "🌿 Tiene terraza o espacio al aire libre",
     "reserva": "📅 Cumple con la condición de reserva",
     "opcion": "🥗 Tiene la opción alimentaria solicitada"
 }
 
-def generar_explicacion(restaurante):
 
+def generar_explicacion(restaurante):
     explicacion = []
 
-    for c in restaurante["coincidencias"]:
+    for coincidencia in restaurante["coincidencias"]:
+        coincidencia = str(coincidencia).strip()
 
-        c = str(c).strip()
-
-        if c in TRADUCCION:
-            explicacion.append(TRADUCCION[c])
+        if coincidencia in TRADUCCION:
+            explicacion.append(TRADUCCION[coincidencia])
 
     return explicacion
+
 
 # ==========================
 # RANKING
 # ==========================
 
 def mostrar_top(resultados):
-
     if not resultados:
         print("\n❌ No se encontraron restaurantes.")
         return
 
-    resultados.sort(key=lambda x: x["puntaje"], reverse=True)
+    resultados.sort(
+        key=lambda restaurante: (
+            restaurante["puntaje"],
+            restaurante["rating"]
+        ),
+        reverse=True
+    )
 
     print("\n🏆 TOP 10 RESTAURANTES\n")
 
-    for i, r in enumerate(resultados[:10]):
+    for posicion, restaurante in enumerate(resultados[:10], start=1):
+        print(f"{posicion}. ⭐ {restaurante['nombre']}")
+        print(f"💰 Precio promedio: ${restaurante['precio']:,}".replace(",", "."))
+        print(f"🎯 Puntaje: {restaurante['puntaje']}")
+        print(f"⭐ Rating: {restaurante['rating']:.1f}")
 
-        print(f"{i+1}. ⭐ {r['nombre']}")
-        print(f"💰 Precio promedio: ${r['precio']}")
-        print(f"🎯 Puntaje: {r['puntaje']}")
-        print(f"⭐ Rating: {r['rating']}")
+        explicacion = generar_explicacion(restaurante)
 
-        exp = generar_explicacion(r)
-
-        if exp:
+        if explicacion:
             print("\nCoincide con:")
 
-            for e in exp:
-                print("   •", e)
+            for elemento in explicacion:
+                print("   •", elemento)
 
-        print("-"*50)
+        print("-" * 50)
 
 
 # ==========================================================
@@ -222,40 +302,33 @@ def mostrar_top(resultados):
 # ==========================================================
 
 def preguntar_recorrido():
-
     while True:
-
         print("\n¿Deseás generar un recorrido entre algunos de estos restaurantes?")
         print("1. Sí")
         print("2. No")
 
-        op = input("> ").strip()
+        opcion = input("> ").strip()
 
-        if op == "1":
+        if opcion == "1":
             return True
 
-        if op == "2":
+        if opcion == "2":
             return False
 
         print("❌ Opción inválida.")
 
 
 def mostrar_opciones_recorrido(disponibles):
-
     print("\nRestaurantes disponibles:\n")
 
-    for i, r in enumerate(disponibles):
-
-        print(f"{i+1}. {r['nombre']}")
+    for posicion, restaurante in enumerate(disponibles, start=1):
+        print(f"{posicion}. {restaurante['nombre']}")
 
     print("0. Finalizar selección")
 
 
-
 def seleccionar_restaurantes(resultados):
-
-    disponibles = resultados[:10]
-
+    disponibles = resultados[:10].copy()
     seleccionados = []
 
     # ==========================
@@ -263,23 +336,18 @@ def seleccionar_restaurantes(resultados):
     # ==========================
 
     while True:
-
         print("\nElegí el restaurante donde querés comenzar y terminar el recorrido:\n")
 
         mostrar_opciones_recorrido(disponibles)
 
-        op = input("> ").strip()
+        opcion = input("> ").strip()
 
-        if op.isdigit():
+        if opcion.isdigit():
+            opcion = int(opcion)
 
-            op = int(op)
-
-            if 1 <= op <= len(disponibles):
-
-                inicio = disponibles.pop(op-1)
-
+            if 1 <= opcion <= len(disponibles):
+                inicio = disponibles.pop(opcion - 1)
                 seleccionados.append(inicio)
-
                 break
 
         print("❌ Opción inválida.")
@@ -289,42 +357,36 @@ def seleccionar_restaurantes(resultados):
     # ==========================
 
     while disponibles:
-
         print("\nElegí otro restaurante para agregar al recorrido.")
         print("(0 para finalizar)")
 
         mostrar_opciones_recorrido(disponibles)
 
-        op = input("> ").strip()
+        opcion = input("> ").strip()
 
-        if op == "0":
+        if opcion == "0":
             break
 
-        if op.isdigit():
+        if opcion.isdigit():
+            opcion = int(opcion)
 
-            op = int(op)
-
-            if 1 <= op <= len(disponibles):
-
-                seleccionado = disponibles.pop(op-1)
-
+            if 1 <= opcion <= len(disponibles):
+                seleccionado = disponibles.pop(opcion - 1)
                 seleccionados.append(seleccionado)
-
                 continue
 
         print("❌ Opción inválida.")
 
     return seleccionados
 
+
 # ==========================================================
 # VIAJANTE
 # ==========================================================
 
 def calcular_recorrido(seleccionados):
-
     inicio = seleccionados[0]["id"]
-
-    restantes = [r["id"] for r in seleccionados[1:]]
+    restantes = [restaurante["id"] for restaurante in seleccionados[1:]]
 
     lista = "[" + ",".join(restantes) + "]"
 
@@ -344,20 +406,21 @@ def calcular_recorrido(seleccionados):
 
     return respuesta[0]
 
-def mostrar_recorrido(recorrido, seleccionados):
 
+def mostrar_recorrido(recorrido, seleccionados):
     if recorrido is None:
         print("\n❌ No fue posible calcular el recorrido.")
         return
 
-    # Diccionario: ID -> Nombre
-    nombres = {}
+    nombres = {
+        restaurante["id"]: restaurante["nombre"]
+        for restaurante in seleccionados
+    }
 
-    for r in seleccionados:
-        nombres[r["id"]] = r["nombre"]
-
-    ruta = recorrido["Ruta"]
-    costo = recorrido["Costo"]
+    # PySwip puede devolver los átomos como objetos propios.
+    # Los convertimos a str para usarlos como claves del diccionario.
+    ruta = [str(restaurante) for restaurante in recorrido["Ruta"]]
+    costo = float(recorrido["Costo"])
     costo_km = costo * 111
 
     print("\n")
@@ -366,14 +429,12 @@ def mostrar_recorrido(recorrido, seleccionados):
     print("=" * 60)
 
     print(f"\n📍 Restaurante de inicio y fin: {nombres[ruta[0]]}\n")
-
     print("Recorrido recomendado:\n")
 
-    for i, restaurante in enumerate(ruta):
+    for posicion, restaurante_id in enumerate(ruta, start=1):
+        print(f"{posicion}. 🍽️ {nombres[restaurante_id]}")
 
-        print(f"{i+1}. 🍽️ {nombres[restaurante]}")
-
-        if i != len(ruta)-1:
+        if posicion != len(ruta):
             print("      │")
             print("      ▼")
 
@@ -382,44 +443,39 @@ def mostrar_recorrido(recorrido, seleccionados):
     print("=" * 60)
 
 
-
 # ==========================
 # MAIN
 # ==========================
 
 def main():
-
     print("🤖 Hola. Soy BotiGastro.")
     print("Te voy a ayudar a elegir dónde comer.\n")
 
-    for c in preferencias:
-        preferencias[c] = pedir_numero(c)
+    for campo in preferencias:
+        preferencias[campo] = pedir_numero(campo)
 
     print("\n🧠 Buscando mejores opciones...\n")
 
-    resultados = ejecutar_prolog(preferencias)
-
-    resultados = convertir_resultados(resultados)
+    resultados_prolog = ejecutar_prolog(preferencias)
+    resultados = convertir_resultados(resultados_prolog)
 
     mostrar_top(resultados)
 
-    # ===========================================
-    # NUEVA FUNCIONALIDAD
-    # ===========================================
+    # No tiene sentido ofrecer un recorrido si no hubo resultados.
+    if not resultados:
+        return
 
     if preguntar_recorrido():
-
         seleccionados = seleccionar_restaurantes(resultados)
 
         print("\nElegiste los siguientes restaurantes:\n")
 
-        for r in seleccionados:
-            print("•", r["nombre"])
+        for restaurante in seleccionados:
+            print("•", restaurante["nombre"])
 
         print("\n🧠 Calculando el mejor recorrido...\n")
 
         recorrido = calcular_recorrido(seleccionados)
-
         mostrar_recorrido(recorrido, seleccionados)
 
 
